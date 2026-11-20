@@ -9,9 +9,11 @@ docker compose up --build -d
 docker compose exec -T app pytest -q
 ```
 
-访问 http://localhost:18244 。启动直接载入现场脏批。切换干净样例和旧编码样例可对照核验。完整对照批INV-A重叠事件取并集后30分钟，基线100kW、实际60kW，损失20kWh；无合格对照或遥测冲突必须保持未定，不能填0。
+访问 http://localhost:18244 。启动直接载入现场脏批。切换干净样例、旧编码样例和混用单位/中文列名样例（mixed）可对照核验。完整对照批INV-A重叠事件取并集后30分钟，基线100kW、实际60kW，损失20kWh；无合格对照或遥测冲突必须保持未定，不能填0。
 
-各模块页面对应 `/<模块英文名>`，各模块执行入口为 `POST /api/<模块英文名>`，不传参即可独立演示。完整运行 `POST /api/runs` 支持 `dataset`（dirty/clean/legacy）、`csv_text` 与 `overrides` 参数。批次历史 `GET /api/runs`，详情 `GET /api/runs/{run_id}`。
+各模块页面对应 `/<模块英文名>`，各模块执行入口为 `POST /api/<模块英文名>`，不传参即可独立演示。完整运行 `POST /api/runs` 支持 `dataset`（dirty/clean/legacy/mixed）、`csv_text`、`overrides` 与 `mapping_version` 参数。批次历史 `GET /api/runs`，详情 `GET /api/runs/{run_id}`，映射版本清单 `GET /api/mappings`。
+
+列别名与功率单位按版本化注册表 `app/mapping.py` 裁定：登记别名/单位兼容换算并留血缘（原列、原值、原单位、系数、依据）；语义未证实的列（如“发电量”）和单位（如 W）整行进待查隔离，不进基线与损失。同一设备同一时刻在换算为 kW 后比较，等价跨单位重复合并为一条（`SAMPLE_DUPLICATE`），冲突双隔离（`SAMPLE_CONFLICT`），绝不产生两条观测。批号 digest 同时纳入规则版本与映射版本：更新规则/映射后重跑同批生成新批号，旧批与已复核记录原样保留；已复核批重复提交返回 409；切换映射版本不兼容时返回 409 并保留旧版结果（`fallback_run_id`）。
 
 同输入与规则版本生成相同批号，只保留一条批次。复核入口 `POST /api/runs/{run_id}/review` 提交当前 `revision`，陈旧提交409。归档包只有一个下载入口 `GET /api/export/{run_id}`，含证据和运行摘要。原始隔离在页面同屏显示。
 

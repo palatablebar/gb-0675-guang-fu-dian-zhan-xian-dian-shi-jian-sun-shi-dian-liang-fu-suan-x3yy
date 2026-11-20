@@ -29,6 +29,12 @@
 | TRAP-06 | 全角千分位 | 静默错算或证据丢失 | 以可复核规则显式处理 | `app/modules/devices/rules.py` | `tests/test_devices.py::test_fullwidth_number` |
 | TRAP-11 | UTC归一 | 静默错算或证据丢失 | 以可复核规则显式处理 | `app/modules/devices/rules.py` | `tests/test_devices.py::test_time_equivalence` |
 | TRAP-23 | 限电区间并集 | 静默错算或证据丢失 | 以可复核规则显式处理 | `app/modules/slicing/rules.py` | `tests/test_slicing.py::test_overlapping_real` |
+| TRAP-31 | 中文列名别名 | 静默错算或证据丢失 | 版本化别名注册表裁定并留痕 | `app/mapping.py`,`app/modules/intake/reader.py` | `tests/test_mapping.py::test_chinese_headers_resolve_via_aliases` |
+| TRAP-32 | 功率单位混用(kW/MW/千瓦/兆瓦) | 静默错算或证据丢失 | 单位注册表按系数换算并保留原值原单位依据 | `app/mapping.py`,`app/modules/devices/rules.py` | `tests/test_mapping.py::test_chinese_unit_aliases_convert` |
+| TRAP-33 | 瓦(W)量级语义未证实 | 静默除以1000 | 判 UNIT_PENDING 待查隔离，不进基线损失 | `app/mapping.py` | `tests/test_mapping.py::test_watt_is_pending_not_silently_scaled` |
+| TRAP-34 | 跨单位等价/冲突重复观测 | 换算后变两条观测 | 换算后比较：等价合并留痕，冲突双隔离 | `app/modules/devices/rules.py` | `tests/test_mapping.py::test_equivalent_cross_unit_duplicates_collapse_to_one` |
+| TRAP-35 | 映射版本更新覆盖旧批 | 已复核证据被改写 | digest纳入映射版本，旧批保留，切换失败409回退 | `app/manifest.py`,`app/main.py` | `tests/test_mapping.py::test_incompatible_switch_keeps_old_result_409` |
+| TRAP-36 | 列名语义未证实(发电量vs功率) | 猜解列含义 | FIELD_PENDING 整行待查 | `app/modules/intake/reader.py` | `tests/test_mapping.py::test_pending_field_alias_quarantines_row` |
 
 ## 对账规则
 

@@ -67,6 +67,17 @@
     "unknown_seconds": "未定 s",
     "line": "原始行",
     "_line": "原始行",
-    "detail": "原因"
+    "detail": "原因",
+    "power_raw": "原始功率值",
+    "unit_raw": "原始单位",
+    "unit_canonical": "规范单位",
+    "unit_factor": "换算系数",
+    "conversion_basis": "换算依据",
+    "unit_code": "单位裁定",
+    "duplicate_of": "并入编号",
+    "raw_header": "原始列名",
+    "canonical": "规范字段",
+    "code": "原因码",
+    "mapping_version": "映射版本"
   }
 }

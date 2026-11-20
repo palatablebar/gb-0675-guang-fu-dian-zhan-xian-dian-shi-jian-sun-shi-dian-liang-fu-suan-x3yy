@@ -13,6 +13,7 @@ def connect(path):
 def save(path, result):
     run_id=result['manifest']['run_id']
     with connect(path) as con:
+        # 同输入+规则+映射版本的批号完全一致：INSERT OR IGNORE 保证已复核记录永不被覆盖。
         con.execute('INSERT OR IGNORE INTO runs(id,digest,result) VALUES(?,?,?)', (run_id,result['manifest']['sha256'],json.dumps(result,ensure_ascii=False)))
     return get(path,run_id)
 

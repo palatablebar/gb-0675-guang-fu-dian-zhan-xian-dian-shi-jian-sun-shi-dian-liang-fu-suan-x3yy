@@ -1,4 +1,37 @@
-const solar={busy:false};const status=document.querySelector('#feedback');document.querySelector('#recompute').addEventListener('click',async()=>{if(solar.busy)return;solar.busy=true;status.textContent='复算中…';try{const dataset=document.querySelector('#dataset').value;const response=await fetch(dataset===document.body.dataset.source?'/api/runs/'+document.body.dataset.runId+'/rerun':'/api/runs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({dataset})});const run=await response.json();if(!response.ok)throw Error(run.detail);const url=new URL(location.href);url.searchParams.set('run_id',run.manifest.run_id);url.searchParams.set('dataset',dataset);location.href=url;}catch(error){status.textContent=error.message;}finally{solar.busy=false;}});
+const solar={busy:false};const status=document.querySelector('#feedback');
+document.querySelector('#recompute').addEventListener('click',async()=>{
+  if(solar.busy)return;solar.busy=true;status.textContent='复算中…';
+  try{
+    const dataset=document.querySelector('#dataset').value;
+    const mappingSelect=document.querySelector('#mapping-version');
+    const mappingVersion=mappingSelect?mappingSelect.value:null;
+    const sameDataset=dataset===document.body.dataset.source;
+    const sameMapping=mappingVersion===document.body.dataset.mappingVersion;
+    let response;
+    if(sameDataset){
+      // 同批重跑或仅切换映射版本：走 rerun，携带目标映射版本
+      response=await fetch('/api/runs/'+document.body.dataset.runId+'/rerun',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(mappingVersion?{mapping_version:mappingVersion}:{})});
+    }else{
+      response=await fetch('/api/runs',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(mappingVersion?{dataset,mapping_version:mappingVersion}:{dataset})});
+    }
+    const run=await response.json();
+    if(!response.ok){
+      if(response.status===409&&run.fallback_run_id){
+        status.textContent='映射切换不兼容，已保留旧版结果：'+run.detail;
+        return;
+      }
+      throw Error(run.detail);
+    }
+    const url=new URL(location.href);
+    url.searchParams.set('run_id',run.manifest.run_id);
+    url.searchParams.set('dataset',dataset);
+    location.href=url;
+  }catch(error){status.textContent=error.message;}
+  finally{solar.busy=false;}
+});
 const filePicker=document.querySelector('#csv-file');
 if(filePicker){
  const editor=document.querySelector('#csv-text');
